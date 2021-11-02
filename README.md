@@ -11,11 +11,28 @@ It automatically generates template scripts for your container files, and create
 We adapted this template code for our algorithm by following the
 [general tutorial on how to create a grand-challenge algorithm](https://grand-challenge.org/blogs/create-an-algorithm/). 
 
-Before diving into the details of this template code we recommend readers have the pre-requisites installed and have cloned this repository as described on the 
-[main README page](https://github.com/DIAGNijmegen/node21), and that they have gone through 
-the [general tutorial on how to create a grand-challenge algorithm](https://grand-challenge.org/blogs/create-an-algorithm/). 
+Before diving into the details of this template code we recommend readers have the pre-requisites installed and have cloned this repository as described below:
 
-The details of how to build and submit the baseline NODE21 nodule detection algorithm using our template code are described below.
+## Prerequisites
+* [Docker](https://www.docker.com/get-started)
+* [evalutils](https://github.com/comic/evalutils)
+* [git lfs](https://git-lfs.github.com/) 
+
+The code in this repository is based on docker and evalutils.  
+
+**Windows Tip**: For participants using Windows, it is highly recommended to 
+install [Windows Subsystem for Linux (WSL)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) 
+to work with Docker on a Linux environment within Windows. Please make sure to install **WSL 2** by following the instructions on the same page. 
+The alternative is to work purely out of Ubuntu, or any other flavor of Linux.
+Also, note that the basic version of WSL 2 does not come with GPU support. 
+Please watch the [official tutorial](https://www.youtube.com/watch?v=PdxXlZJiuxA) 
+by Microsoft on installing WSL 2 with GPU support.
+
+Please clone the repository as follows:
+```python
+git clone git@github.com:node21challenge/node21_detection_baseline.git
+```
+
 
 ## Table of Contents  
 [An overview of the baseline algorithm](#algorithm)  
@@ -26,7 +43,7 @@ The details of how to build and submit the baseline NODE21 nodule detection algo
 <a name="algorithm"/>
 
 ## An overview of the baseline algorithm
-The baseline nodule detection algorithm is a [Faster R-CNN](https://papers.nips.cc/paper/2015/hash/14bfa6bb14875e45bba028a21ed38046-Abstract.html) model, which was implemented using [pytorch](https://pytorch.org/) library. The main file executed by the docker container is [*process.py*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py). 
+The baseline nodule detection algorithm is a [Faster R-CNN](https://papers.nips.cc/paper/2015/hash/14bfa6bb14875e45bba028a21ed38046-Abstract.html) model, which was implemented using [pytorch](https://pytorch.org/) library. The main file executed by the docker container is [*process.py*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py). 
 
 ### Input and Output Interfaces
 The algorithm needs to perform nodule detection on a given chest X-ray image (CXR), predict a nodule bounding box where a nodule is suspected 
@@ -44,8 +61,8 @@ This file is a dictionary and contains multiple 2D bounding boxes coordinates
 in [CIRRUS](https://comic.github.io/grand-challenge.org/components.html#grandchallenge.components.models.InterfaceKind.interface_type_annotation) 
 compatible format. 
 The coordinates are expected in milimiters when spacing information is available. 
-We provide a [function](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L121) 
-in [*process.py*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py) 
+We provide a [function](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L121) 
+in [*process.py*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py) 
 which converts the predictions of the Faster R-CNN model (2D pixel coordinates) to this format. An example json file is as follows:
 ```python
 {
@@ -72,13 +89,13 @@ which converts the predictions of the Faster R-CNN model (2D pixel coordinates) 
 }
 ```
 The implementation of the algorithm inference in process.py is straightforward (and must be followed by participants creating their own algorithm): 
-load the model in the [*__init__*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L29) function of the class, 
-and implement a function called [*predict*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L166) 
+load the model in the [*__init__*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L29) function of the class, 
+and implement a function called [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L166) 
 to perform inference on a CXR image. 
-The function [*predict*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L166) is run by 
-evalutils when the [process](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L217) function is called. 
+The function [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L166) is run by 
+evalutils when the [process](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L217) function is called. 
 Since we want to save the predictions produced by the *predict* function directly as a *nodules.json* file, 
-we have overwritten the function [*process_case*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L71) of evalutils.  
+we have overwritten the function [*process_case*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L71) of evalutils.  
 We recommend that you copy this implementation in your file as well.
 
 ### Operating on a 3D image (Stack of 2D CXR images)
@@ -86,7 +103,7 @@ We recommend that you copy this implementation in your file as well.
 For the sake of time efficiency in the evaluation process of [NODE21](https://node21.grand-challenge.org/), 
 the submitted algorithms to [NODE21](https://node21.grand-challenge.org/) are expected to operate on a 3D image which consists of multiple CXR images 
 stacked together. The algorithm should go through the slices (CXR images) one by one and process them individually, 
-as shown in [*predict*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L181). 
+as shown in [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L181). 
 When outputting results, the third coordinate of the bounding box in nodules.json file is used to identify the CXR from the stack. 
 If the algorithm processes the first CXR image in 3D volume, the z coordinate output should be 0, if it processes the third CXR image, it should be 2, etc. 
 
@@ -95,7 +112,7 @@ If the algorithm processes the first CXR image in 3D volume, the z coordinate ou
 A selection of NODE21 algorithms will be chosen, based on performance and diversity of methodology, for further experimentation and inclusion in a peer-reviewed
 article.  The owners of these algorithms (maximum 3 per algorithm) will be co-authors on this publication.  
 For this reason, we request that the container submissions to NODE21 detection track should implement training functionality as well as testing. 
-This should be implemented in the [*train*](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/process.py#L90) function 
+This should be implemented in the [*train*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L90) function 
 which receives the input (containing images and metadata.csv) and output directory as arguments. The input directory is expected to look like this:
 ```
 Input_dir/
@@ -133,7 +150,7 @@ False - this sets all paths to relative paths. You should set it back to **True*
 <a name="dockerfile"/>
 
 ### Configure the Docker file
-We recommend that you use our [dockerfile](https://github.com/DIAGNijmegen/node21/blob/main/algorithms/noduledetection/Dockerfile) as a template, 
+We recommend that you use our [dockerfile](https://github.com/node21challenge/node21_detection_baseline/blob/main/Dockerfile) as a template, 
 and update it according to your algorithm requirements. There are three main components you need to define in your docker file in order to 
 wrap your algorithm in a docker container:
 1. Choose the right base image (official base image from the library you need (tensorflow, pytorch etc.) recommended)
@@ -210,6 +227,10 @@ Please update your ```test/expected_output.json``` according to your algorithm r
     docker save noduledetector | gzip -c > noduledetector.tar.gz
    ```
     
+ ### Submit your algorithm
+Details of how to create an algorithm on grand-challenge and submit it to the node21 challenge will be added here soon.  
+Please make sure all steps described above work as expected before proceeding.
+<!---
  <a name="submit"/>
  
  ### Submit your algorithm
@@ -219,7 +240,7 @@ Please update your ```test/expected_output.json``` according to your algorithm r
 
 1. In order to submit your algorithm, you first have to create an algorithm entry for your docker container [here](https://grand-challenge.org/algorithms/create/).
    * Please choose a title for your algorithm and add a (squared image) logo. Enter the modalities and structure information as in the example below.
-      ![alt text](https://github.com/DIAGNijmegen/node21/blob/main/images/algorithm_description.PNG)
+      ![alt text](images/algorithm_description.PNG)
 
    * Scrolling down the page, you will see that you need to enter further information:
    * Enter the URL of your GitHub repository which must be public, contain all your code and an [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0). When entering the repo name in algorithm-creation do not enter a full URL, only the part that comes after github.com/. For example if your github url is https://github.com/ecemlago/node21_detection_baseline/, please enter the field as *ecemlago/node21_detection_baseline*.
@@ -229,26 +250,26 @@ Please update your ```test/expected_output.json``` according to your algorithm r
    ![alt text](https://github.com/ecemlago/node21_detection_baseline/blob/master/images/alg_interfaces.PNG)
   
    * At the bottom of the page, indicate that you would like your Docker image to use GPU and how much memory it needs
-   ![alt text](https://github.com/DIAGNijmegen/node21/blob/main/images/container_img_config.PNG)
+   ![alt text](images/container_img_config.PNG)
    
 2. After saving it, you can either upload your docker container (.tar.gaz) or you can let grand-challenge build your algorithm container from your github repository. 
     
     OPTION 1: If you would like to upload your docker container directly, please click on "upload a Container" button, and upload your container. You can also later overwrite your container by uploading a new one. That means that when you make changes to your algorithm, you could overwrite your container and submit the updated version of your algorithm to node21:
-    ![alt text](https://github.com/ecemlago/node21_detection_baseline/blob/master/images/algorithm_uploadcontainer.PNG)
+    ![alt text](images/algorithm_uploadcontainer.PNG)
     
     OPTION 2: If you would like to submit your repository and let grand-challenge build the docker image for you, please click on "Link github repo" and select your repository to give repository access to grand-challenge to build your algorithm. Once this is done, you should tag the repo to kick off the build process. Please bear in mind that, the root of the github repository must contain the dockerfile, the licence, the gitattributes in order to build the image for you. Further, you must have admin rights to the repository so that you can give permission for GC to install an app there. 
-    ![alt text](https://github.com/ecemlago/node21_detection_baseline/blob/master/images/container_image.PNG)
+    ![alt text](images/container_image.PNG)
 
 3. OPTIONAL: Please note that it can take a while (several minutes) until the container becomes active. After it uploads successfully you will see the details of the Algorithm with "Ready: False"
    You can check back at any time on the "Containers" page and see if the status has changed to "Active".
   Once it becomes active, we suggest that you try out the algorithm to verify everything works as expected. For this, please click on *Try-out Algorithm* tab, and upload a *Generic Medical Image*. You could upload the image provided here in the test folder since it is a 3D image (CXRs are stacked together) which is the expected format.
-  ![alt text](https://github.com/DIAGNijmegen/node21/blob/main/images/algorithm_tryout.PNG)
+  ![alt text](images/algorithm_tryout.PNG)
 4. OPTIONAL: You could look at the results of your algorithm: click on the *Results*, and *Open Result in Viewer* to visualize the results. You would be directed to CIRRUS viewer, and the results will be visualized with the predicted bounding boxes on chest x-ray images as below. You could move to the next and previous slice (slice is a chest x-ray in this case) by clicking on the up and down arrow in the keyboard.
-    ![alt text](https://github.com/DIAGNijmegen/node21/blob/main/images/algorithm_results.PNG)
+    ![alt text](images/algorithm_results.PNG)
 
 5. Go to the [NODE21](https://node21.grand-challenge.org/evaluation/challenge/submissions/create/) submission page, and submit your solution to the detection track by choosing your algorithm.
-   ![alt text](https://github.com/DIAGNijmegen/node21/blob/main/images/node21_submission.PNG)
-    
+   ![alt text](node21_submission.PNG)
+-->
 
 
 
