@@ -61,7 +61,7 @@ This file is a dictionary and contains multiple 2D bounding boxes coordinates
 in [CIRRUS](https://comic.github.io/grand-challenge.org/components.html#grandchallenge.components.models.InterfaceKind.interface_type_annotation) 
 compatible format. 
 The coordinates are expected in milimiters when spacing information is available. 
-We provide a [function](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L121) 
+We provide a [function](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L131) 
 in [*process.py*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py) 
 which converts the predictions of the Faster R-CNN model (2D pixel coordinates) to this format. An example json file is as follows:
 ```python
@@ -90,12 +90,12 @@ which converts the predictions of the Faster R-CNN model (2D pixel coordinates) 
 ```
 The implementation of the algorithm inference in process.py is straightforward (and must be followed by participants creating their own algorithm): 
 load the model in the [*__init__*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L29) function of the class, 
-and implement a function called [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L166) 
+and implement a function called [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L171) 
 to perform inference on a CXR image. 
-The function [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L166) is run by 
-evalutils when the [process](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L217) function is called. 
+The function [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L171) is run by 
+evalutils when the [process](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L222) function is called. 
 Since we want to save the predictions produced by the *predict* function directly as a *nodules.json* file, 
-we have overwritten the function [*process_case*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L71) of evalutils.  
+we have overwritten the function [*process_case*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L75) of evalutils.  
 We recommend that you copy this implementation in your file as well.
 
 ### Operating on a 3D image (Stack of 2D CXR images)
@@ -103,7 +103,7 @@ We recommend that you copy this implementation in your file as well.
 For the sake of time efficiency in the evaluation process of [NODE21](https://node21.grand-challenge.org/), 
 the submitted algorithms to [NODE21](https://node21.grand-challenge.org/) are expected to operate on a 3D image which consists of multiple CXR images 
 stacked together. The algorithm should go through the slices (CXR images) one by one and process them individually, 
-as shown in [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L181). 
+as shown in [*predict*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L171). 
 When outputting results, the third coordinate of the bounding box in nodules.json file is used to identify the CXR from the stack. 
 If the algorithm processes the first CXR image in 3D volume, the z coordinate output should be 0, if it processes the third CXR image, it should be 2, etc. 
 
@@ -112,7 +112,7 @@ If the algorithm processes the first CXR image in 3D volume, the z coordinate ou
 A selection of NODE21 algorithms will be chosen, based on performance and diversity of methodology, for further experimentation and inclusion in a peer-reviewed
 article.  The owners of these algorithms (maximum 3 per algorithm) will be co-authors on this publication.  
 For this reason, we request that the container submissions to NODE21 detection track should implement training functionality as well as testing. 
-This should be implemented in the [*train*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L90) function 
+This should be implemented in the [*train*](https://github.com/node21challenge/node21_detection_baseline/blob/main/process.py#L94) function 
 which receives the input (containing images and metadata.csv) and output directory as arguments. The input directory is expected to look like this:
 ```
 Input_dir/
