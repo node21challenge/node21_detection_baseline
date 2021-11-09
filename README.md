@@ -229,7 +229,7 @@ Please update your ```test/expected_output.json``` according to your algorithm r
     
  ### Submit your algorithm
 Details of how to create an algorithm on grand-challenge and submit it to the node21 challenge will be added here soon.  
-Please make sure all steps described above work as expected before proceeding.
+Please make sure all steps described above work as expected before proceeding.  Ensure also that you have an account on grand-challenge.org and that you are a [verified user](https://grand-challenge.org/documentation/account-verification/) there.
 <!---
  <a name="submit"/>
  
