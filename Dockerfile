@@ -28,7 +28,7 @@ COPY --chown=algorithm:algorithm training_utils /opt/algorithm/training_utils
 # Install required python packages via pip - please see the requirements.txt and adapt it to your needs
 RUN python -m pip install --user -rrequirements.txt
 
-COPY --chown=algorithm:algorithm process.py /opt/algorithm/
+COPY --chown=algorithm:algorithm process.py postprocessing.py /opt/algorithm/
 
 # Entrypoint to run, entypoint.sh files executes process.py as a script
 ENTRYPOINT ["bash", "entrypoint.sh"]

@@ -20,6 +20,7 @@ import os
 from training_utils.train import train_one_epoch
 import itertools
 from pathlib import Path
+from postprocessing import get_NonMaxSup_boxes
 
 # This parameter adapts the paths between local execution and execution in docker. You can use this flag to switch between these two modes.
 # For building your docker, set this parameter to True. If False, it will run process.py locally for test purposes.
@@ -89,7 +90,9 @@ class Noduledetection(DetectionAlgorithm):
         
         # Write resulting candidates to nodules.json for this case
         return scored_candidates
-        
+    
+   
+    
     #--------------------Write your retrain function here ------------
     def train(self, input_dir, output_dir, num_epochs = 1):
         '''
@@ -189,7 +192,8 @@ class Noduledetection(DetectionAlgorithm):
             tensor_image = torch.from_numpy(image).to(self.device)#.reshape(1, 1024, 1024)
             with torch.no_grad():
                 prediction = self.model([tensor_image.to(self.device)])
-
+            
+            prediction = [get_NonMaxSup_boxes(prediction[0])]
             # convert predictions from tensor to numpy array.
             np_prediction = {str(key):[i.cpu().numpy() for i in val]
                    for key, val in prediction[0].items()}
