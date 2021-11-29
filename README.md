@@ -228,14 +228,8 @@ Please update your ```test/expected_output.json``` according to your algorithm r
     docker save noduledetector | gzip -c > noduledetector.tar.gz
    ```
     
- ### Submit your algorithm
-Details of how to create an algorithm on grand-challenge and submit it to the node21 challenge will be added here soon.  
+ ### Submit your algorithm  
 Please make sure all steps described above work as expected before proceeding.  Ensure also that you have an account on grand-challenge.org and that you are a [verified user](https://grand-challenge.org/documentation/account-verification/) there.
-
- <a name="submit"/>
- 
- ### Submit your algorithm
- You could submit your algorithm in two different ways: by uploading your docker container (your .tar.gz file), or by submitting your github repository. 
  
  Once you test that your docker container runs as expected, you are ready to submit! Let us walk you through the steps you need to follow to upload and submit your algorithm to [NODE21](https://node21.grand-challenge.org/) detection track:
 
