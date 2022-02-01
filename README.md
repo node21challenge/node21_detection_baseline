@@ -1,4 +1,5 @@
 # Nodule Detection Algorithm
+Credits: Ecem Sogancioglu, Keelin Murphy
 
 This codebase implements a baseline model, [Faster R-CNN](https://papers.nips.cc/paper/2015/hash/14bfa6bb14875e45bba028a21ed38046-Abstract.html), 
 for the nodule detection track in [NODE21](https://node21.grand-challenge.org/). 
