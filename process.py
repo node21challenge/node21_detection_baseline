@@ -80,7 +80,7 @@ class Noduledetection(DetectionAlgorithm):
             json.dump(self._case_results[0], f)
             
     # TODO: Copy this function for your processor as well!
-    def process_case(self, *, idx, case):
+    def process_case(self, test, idx, case):
         '''
         Read the input, perform model prediction and return the results. 
         The returned value will be saved as nodules.json by evalutils.
@@ -139,7 +139,7 @@ class Noduledetection(DetectionAlgorithm):
             torch.save(self.model.state_dict(), os.path.join(self.output_path, 'model_retrained.pth'))
       
 
-    def format_to_GC(self, np_prediction, spacing) -> Dict:
+    def format_to_GC(self, np_prediction, spacing):
         '''
         Convenient function returns detection prediction in required grand-challenge format.
         See:
@@ -179,7 +179,7 @@ class Noduledetection(DetectionAlgorithm):
             merged_d[k] = list(itertools.chain(*[d[k] for d in results]))
         return merged_d
         
-    def predict(self, *, input_image: SimpleITK.Image) -> DataFrame:
+    def predict(self, test, input_image):
         self.model.eval() 
         
         image_data = SimpleITK.GetArrayFromImage(input_image)
