@@ -78,7 +78,8 @@ class Noduledetection(DetectionAlgorithm):
 
     def save(self):
         with open(str(self._output_file), "w") as f:
-            json.dump(self._case_results[0], f)
+            for i in range(len(self._case_results)):
+                json.dump(self._case_results[i], f)
 
     # TODO: Copy this function for your processor as well!
     def process_case(self, idx, case):
@@ -157,6 +158,7 @@ class Noduledetection(DetectionAlgorithm):
         x_y_spacing = [spacing[0], spacing[1], spacing[0], spacing[1]]
         boxes = []
         for i, bb in enumerate(np_prediction['boxes']):
+            bb = np.float64(bb)
             box = {}
             box['corners'] = []
             x_min, y_min, x_max, y_max = bb * x_y_spacing
@@ -165,7 +167,8 @@ class Noduledetection(DetectionAlgorithm):
             bottom_right = [x_max, y_min, np_prediction['slice'][i]]
             top_left = [x_min, y_max, np_prediction['slice'][i]]
             top_right = [x_max, y_max, np_prediction['slice'][i]]
-            box['corners'].extend([top_right, top_left, bottom_left, bottom_right])
+            # box['corners'].extend([top_right, top_left, bottom_left, bottom_right])
+            box['corners'].extend(bb)
             box['probability'] = round(float(np_prediction['scores'][i]), 2)
             boxes.append(box)
 
@@ -234,6 +237,4 @@ if __name__ == "__main__":
     else:  # test mode (test or retest)
         print(parsed_args.input_dir)
         Noduledetection(parsed_args.input_dir, parsed_args.output_dir, retest=parsed_args.retest).process()
-
-
 
