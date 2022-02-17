@@ -15,12 +15,15 @@ from skimage import transform
 import json
 from typing import Dict
 import training_utils.utils as utils
-from training_utils.dataset import CXRNoduleDataset, get_transform
+from training_utils.dataset import CXRNoduleDataset, get_transform, resize_image_bb, create_bb_array
 import os
-from training_utils.train import train_one_epoch
+from training_utils.train import train_one_epoch, val_metrics
 import itertools
 from pathlib import Path
 from postprocessing import get_NonMaxSup_boxes
+from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN
+# from engine import train_one_epoch, evaluate
 
 '''
 NODE21 template nodule detection codebase
@@ -50,28 +53,37 @@ class Noduledetection(DetectionAlgorithm):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.input_path, self.output_path = input_dir, output_dir
         print('using the device ', self.device)
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False, pretrained_backbone=False)
-        num_classes = 2  # 1 class (nodule) + background
-        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+        # CheXNet pretrained weights are loaded into state_dict_model
+        state_dict_model = torch.load("/Volumes/ExternalHardDrive/node21_detection_baseline/Untitled/model.pth.tar", map_location=self.device)
+        # DenseNet121 is set as the backbone to the FasterRCNN
+        pretrained = torchvision.models.densenet121(pretrained=True)
+        pretrained.load_state_dict(state_dict_model['state_dict'], strict=False)
+        pretrained = pretrained.features
+        pretrained.out_channels = 1024
+        # Anchor points
+        anchor_generator = AnchorGenerator(
+            sizes=((32,64, 128, 256),),
+            aspect_ratios=((0.25,0.5, 1.0, 2.0),))
+        self.model = FasterRCNN(pretrained, 2, rpn_anchor_generator=anchor_generator)
 
         if not (train or retest):
             # retrain or test phase
             print('loading the model.pth file :')
             self.model.load_state_dict(
                 torch.load(
-                    Path("/opt/algorithm/model.pth") if execute_in_docker else Path("model.pth"),
+                    Path("/opt/algorithm/model.pth") if execute_in_docker else Path("/Volumes/ExternalHardDrive/node21_detection_baseline/Untitled/model_retrained_anch.pth"),
                     map_location=self.device,
-                )
+                ), strict=False
             )
 
         if retest:
             print('loading the retrained model_retrained.pth file')
             self.model.load_state_dict(
                 torch.load(
-                    Path(os.path.join(self.input_path, 'model_retrained.pth')),
+                    Path(os.path.join(self.input_path, '/Volumes/ExternalHardDrive/node21_detection_baseline/Untitled/model_retrained_anch.pth')),
                     map_location=self.device,
-                )
+                ), strict = False
             )
 
         self.model.to(self.device)
@@ -111,12 +123,18 @@ class Noduledetection(DetectionAlgorithm):
 
         # create training dataset and defined transformations
         self.model.train()
-        input_dir = self.input_path
-        dataset = CXRNoduleDataset(input_dir, os.path.join(input_dir, 'metadata.csv'), get_transform(train=True))
+        input_dir_training = "/Volumes/ExternalHardDrive/CISC881/dataset_node21/cxr_images/proccessed_data/training"
+        input_dir_testing = "/Volumes/ExternalHardDrive/CISC881/dataset_node21/cxr_images/proccessed_data/testing"
+        dataset = CXRNoduleDataset(input_dir_training, os.path.join(input_dir_training, 'metadata.csv'), get_transform(train=True))
+        dataset_test = CXRNoduleDataset(input_dir_testing, os.path.join(input_dir_testing, 'metadata.csv'), get_transform(train=False))
+
         print('training starts ')
         # define training and validation data loaders
         data_loader = torch.utils.data.DataLoader(
             dataset, batch_size=2, shuffle=True, num_workers=4,
+            collate_fn=utils.collate_fn)
+        data_loader_test = torch.utils.data.DataLoader(
+            dataset_test, batch_size=1, shuffle=False, num_workers=4,
             collate_fn=utils.collate_fn)
 
         # construct an optimizer
@@ -133,7 +151,6 @@ class Noduledetection(DetectionAlgorithm):
             lr_scheduler.step()
             print('epoch ', str(epoch), ' is running')
             # evaluate on the test dataset
-
             # IMPORTANT: save retrained version frequently.
             print('saving the model')
             torch.save(self.model.state_dict(), os.path.join(self.output_path, 'model_retrained.pth'))
