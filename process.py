@@ -15,7 +15,7 @@ from skimage import transform
 import json
 from typing import Dict
 import training_utils.utils as utils
-from training_utils.dataset import CXRNoduleDataset, get_transform, resize_image_bb, create_bb_array
+from training_utils.dataset import CXRNoduleDataset, get_transform
 import os
 from training_utils.train import train_one_epoch, val_metrics
 import itertools
@@ -146,11 +146,12 @@ class Noduledetection(DetectionAlgorithm):
                                                        step_size=3,
                                                        gamma=0.1)
         for epoch in range(num_epochs):
-            train_one_epoch(self.model, optimizer, data_loader, self.device, epoch, print_freq=10)
+            train_one_epoch(self.model, optimizer, data_loader, data_loader_test, self.device, epoch, print_freq=10)
             # update the learning rate
             lr_scheduler.step()
             print('epoch ', str(epoch), ' is running')
             # evaluate on the test dataset
+            print("The mean iou for this epoch is: {}".format(val_metrics(self.model, data_loader_test, self.device)))
             # IMPORTANT: save retrained version frequently.
             print('saving the model')
             torch.save(self.model.state_dict(), os.path.join(self.output_path, 'model_retrained.pth'))

@@ -11,6 +11,8 @@ from torchvision.ops.boxes import _box_inter_union
 """
 The following two functions are taken from: https://github.com/dbolya/yolact/blob/master/layers/box_utils.py
 """
+
+
 def jaccard(box_a, box_b):
     """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
     is simply the intersection over union of two boxes.  Here we operate on
